@@ -1,10 +1,17 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+    - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    restart: always
   app:
     build: .
-    ports:
-      - "5000:5000"
     environment:
       DB_HOST: db
       DB_NAME: notesdb
@@ -25,6 +32,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    restart: always
 volumes:
   postgres_data:

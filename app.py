@@ -7,13 +7,25 @@ app = Flask(__name__)
 
 # Функция подключения к БД
 def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.environ.get('DB_HOST', 'db'),
-        database=os.environ.get('DB_NAME', 'notesdb'),
-        user=os.environ.get('DB_USER', 'postgres'),
-        password=os.environ.get('DB_PASSWORD', 'postgres')
-    )
-    return conn
+    """Подключение к БД с повторными попытками"""
+    import time
+    max_attempts = 10
+    
+    for attempt in range(max_attempts):
+        try:
+            conn = psycopg2.connect(
+                host=os.environ.get('DB_HOST', 'db'),
+                database=os.environ.get('DB_NAME', 'notesdb'),
+                user=os.environ.get('DB_USER', 'postgres'),
+                password=os.environ.get('DB_PASSWORD', 'postgres')
+            )
+            return conn
+        except psycopg2.OperationalError:
+            if attempt < max_attempts - 1:
+                print(f"База данных не готова. Попытка {attempt + 1}/{max_attempts}. Ждем 2 секунды...")
+                time.sleep(2)
+            else:
+                raise
 
 # Инициализация таблицы при старте
 def init_db():
